@@ -16,7 +16,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -97,31 +96,7 @@ public class MainActivity extends Activity {
 		try {
 			if (resultCode == RESULT_OK) {
 				if (requestCode == REQUEST_CAMERA) {
-					File f = new File(Environment.getExternalStorageDirectory()
-							.toString());
-					for (File temp : f.listFiles()) {
-						if (temp.getName().equals(TEMP)) {
-							f = temp;
-							break;
-						}
-					}
-					try {
-						Bitmap bitmap;
-						BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
-						bitmapOptions.inSampleSize = FOUR;
-						bitmapOptions.inPurgeable = true;
-						bitmapOptions.inScaled = false;
-						bitmap = BitmapFactory.decodeFile(f.getAbsolutePath(),
-								bitmapOptions);
-						addPicture(bitmap, f.getName());
-						Toast.makeText(MainActivity.this,
-								ADDED_IMAGE + f.getAbsolutePath(),
-								Toast.LENGTH_LONG).show();
-						update();
-					} catch (Exception e) {
-						Toast.makeText(MainActivity.this, e.getMessage(),
-								Toast.LENGTH_LONG).show();
-					}
+					startGallery();
 				} else if (requestCode == SELECT_FILE) {
 					Uri selectedImage = data.getData();
 					String[] filePathColumn = { MediaStore.Images.Media.DATA };
