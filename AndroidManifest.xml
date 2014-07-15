@@ -13,6 +13,7 @@
         android:targetSdkVersion="10" />
 
     <application
+        android:screenOrientation="portrait"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/appName"
