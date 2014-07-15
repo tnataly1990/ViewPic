@@ -44,6 +44,8 @@ public final class R {
     }
     public static final class string {
         public static final int Email_is_not_valid=0x7f05000d;
+        public static final int Image_was_saved_in_the_gallery=0x7f050011;
+        public static final int Not_enough_memory=0x7f050012;
         public static final int Ops_person_has_not_email=0x7f05000b;
         public static final int Picture_was_not_selected=0x7f050010;
         public static final int Please_enter_email=0x7f05000c;

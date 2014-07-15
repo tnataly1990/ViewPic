@@ -1,10 +1,6 @@
 package com.example.viewpic.activities;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 
 import com.example.viewpic.R;
@@ -22,7 +18,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.provider.MediaStore.MediaColumns;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -39,10 +34,15 @@ import android.widget.AdapterView.OnItemClickListener;
  */
 public class MainActivity extends Activity {
 
+	private static final String ADDED_IMAGE = "Added image: ";
+	private static final String RUNTIME_EXCEPTION = "RuntimeException";
+	private static final String EXCEPTION = "Exception";
+	private static final String TEMP = "temp.jpg";
+	private static final int FOUR = 4;
 	private static final String CANCEL = "Cancel";
 	private static final String OPEN_GALLERY = "Open gallery";
 	private static final String START_CAMERA = "Start camera";
-	private static final String TEMP_JPG = "temp.jpg";
+	private static final String TEMP_JPG = TEMP;
 	private static final String IMAGE = "image/*";
 	private static final String SELECT_FILE2 = "Select File";
 	private static final String MY_LIFE_IS_A_LIE = "My life is a lie";
@@ -50,7 +50,6 @@ public class MainActivity extends Activity {
 	private static final String SWEEEEEETY_COOOFFFEEE = "Sweeeeeety cooofffeee";
 	private static final String COFFEE = "Coffee";
 	private static final String NO_DESCRIPTION = "No description";
-	private static final String NEW_PICTURE = "New picture";
 	private static final String POSITION = "position";
 	protected static final int REQUEST_CAMERA = 0;
 	protected static final int SELECT_FILE = 1;
@@ -95,32 +94,73 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		if (resultCode == RESULT_OK) {
-			if (requestCode == REQUEST_CAMERA) {
-				Bundle extras = data.getExtras();
-		        Bitmap imageBitmap = (Bitmap) extras.get("data");
-				addPicture(imageBitmap);
-				update();
-			} else if (requestCode == SELECT_FILE) {
-				try {
-					Uri selectedImageUri = data.getData();
-					String tempPath = getPath(selectedImageUri,
-							MainActivity.this);
+		try {
+			if (resultCode == RESULT_OK) {
+				if (requestCode == REQUEST_CAMERA) {
+					File f = new File(Environment.getExternalStorageDirectory()
+							.toString());
+					for (File temp : f.listFiles()) {
+						if (temp.getName().equals(TEMP)) {
+							f = temp;
+							break;
+						}
+					}
+					try {
+						Bitmap bitmap;
+						BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+						bitmapOptions.inSampleSize = FOUR;
+						bitmapOptions.inPurgeable = true;
+						bitmapOptions.inScaled = false;
+						bitmap = BitmapFactory.decodeFile(f.getAbsolutePath(),
+								bitmapOptions);
+						addPicture(bitmap, f.getName());
+						Toast.makeText(MainActivity.this,
+								ADDED_IMAGE + f.getAbsolutePath(),
+								Toast.LENGTH_LONG).show();
+						update();
+					} catch (Exception e) {
+						Toast.makeText(MainActivity.this, e.getMessage(),
+								Toast.LENGTH_LONG).show();
+					}
+				} else if (requestCode == SELECT_FILE) {
+					Uri selectedImage = data.getData();
+					String[] filePathColumn = { MediaStore.Images.Media.DATA };
+
+					Cursor cursor = getContentResolver().query(selectedImage,
+							filePathColumn, null, null, null);
+					cursor.moveToFirst();
+
+					int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+					String picturePath = cursor.getString(columnIndex);
+					cursor.close();
+
 					Bitmap bm;
 					BitmapFactory.Options btmapOptions = new BitmapFactory.Options();
-					bm = BitmapFactory.decodeFile(tempPath, btmapOptions);
-					addPicture(bm);
-					update();
-				} catch (Exception e) {
+					btmapOptions.inSampleSize = FOUR;
+					btmapOptions.inPurgeable = true;
+					btmapOptions.inScaled = false;
+					bm = BitmapFactory.decodeFile(picturePath, btmapOptions);
+
 					Toast.makeText(MainActivity.this,
-							"onActivityResult SELECT_FILE " + e.getMessage(),
-							Toast.LENGTH_LONG).show();
+							ADDED_IMAGE + picturePath, Toast.LENGTH_LONG)
+							.show();
+					addPicture(bm, picturePath.substring(picturePath.lastIndexOf("/") + 1));
+					update();
 				}
+			} else {
+				Toast.makeText(MainActivity.this,
+						R.string.Picture_was_not_selected, Toast.LENGTH_SHORT)
+						.show();
 			}
-		} else {
-			Toast.makeText(MainActivity.this,
-					R.string.Picture_was_not_selected, Toast.LENGTH_SHORT)
-					.show();
+		} catch (OutOfMemoryError e) {
+			Toast.makeText(MainActivity.this, R.string.Not_enough_memory,
+					Toast.LENGTH_SHORT).show();
+		} catch (RuntimeException e) {
+			Toast.makeText(MainActivity.this, RUNTIME_EXCEPTION,
+					Toast.LENGTH_SHORT).show();
+		} catch (Exception e) {
+			Toast.makeText(MainActivity.this, EXCEPTION + e.getMessage(),
+					Toast.LENGTH_SHORT).show();
 		}
 	}
 
@@ -141,8 +181,8 @@ public class MainActivity extends Activity {
 	}
 
 	// add new picture
-	private void addPicture(Bitmap image) {
-		picturesList.add(new Picture(image, NEW_PICTURE, NO_DESCRIPTION));
+	private void addPicture(Bitmap image, String name) {
+		picturesList.add(new Picture(image, name, NO_DESCRIPTION));
 	}
 
 	// init start data for pictures view
@@ -151,11 +191,11 @@ public class MainActivity extends Activity {
 				R.drawable.a);
 		Bitmap b = BitmapFactory.decodeResource(this.getResources(),
 				R.drawable.b);
-
 		picturesList.add(new Picture(a, COFFEE, SWEEEEEETY_COOOFFFEEE));
 		picturesList.add(new Picture(b, CAKE, MY_LIFE_IS_A_LIE));
 	}
 
+	// start select picture dialog
 	private void selectPicture() {
 		final String[] items = { START_CAMERA, OPEN_GALLERY, CANCEL };
 
@@ -171,13 +211,7 @@ public class MainActivity extends Activity {
 					intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(file));
 					startActivityForResult(intent, REQUEST_CAMERA);
 				} else if (items[item].equals(items[1])) {
-					Intent intent = new Intent(
-							Intent.ACTION_PICK,
-							android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-					intent.setType(IMAGE);
-					startActivityForResult(
-							Intent.createChooser(intent, SELECT_FILE2),
-							SELECT_FILE);
+					startGallery();
 				} else if (items[item].equals(items[2])) {
 					dialog.dismiss();
 				}
@@ -186,12 +220,12 @@ public class MainActivity extends Activity {
 		builder.show();
 	}
 
-	private String getPath(Uri uri, Activity activity) {
-		String[] projection = { MediaColumns.DATA };
-		Cursor cursor = activity
-				.managedQuery(uri, projection, null, null, null);
-		int column_index = cursor.getColumnIndexOrThrow(MediaColumns.DATA);
-		cursor.moveToFirst();
-		return cursor.getString(column_index);
+	// start gallery
+	private void startGallery() {
+		Intent intent = new Intent(Intent.ACTION_PICK,
+				android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+		intent.setType(IMAGE);
+		startActivityForResult(Intent.createChooser(intent, SELECT_FILE2),
+				SELECT_FILE);
 	}
 }

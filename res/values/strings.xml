@@ -21,5 +21,7 @@
 	<string name="Send_mail">Send mail...</string>
 	<string name="Send_mail_problems">Send mail problems.</string>
 	<string name="Picture_was_not_selected">Picture was not selected.</string>
+	<string name="Image_was_saved_in_the_gallery">Image was saved in the sd card.</string>
+	<string name="Not_enough_memory">Not enough memory.</string>
 	
 </resources>
