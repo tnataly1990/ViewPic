@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import android.content.Context;
+import android.os.Environment;
 
 public class LogsUtility {
 
@@ -16,13 +17,16 @@ public class LogsUtility {
 	public static final String INFO = "INFO";
 	public static final String ERROR = "ERROR";
 	private static final String VIEWPIC_LOGS = "viewpiclogs.txt";
+	private static final String VIEWPIC = "viewpic";
 
 	public static void log(Context context, String type, String message) {	
 		BufferedWriter output = null;
 		try {
-			File dir = new File(context.getFilesDir(), "/");
+			//File dir = new File(context.getFilesDir(), "/");			
+			File dir = new File(Environment.getExternalStoragePublicDirectory(VIEWPIC), File.separator);
 			dir.mkdirs();
-			File file = new File(context.getFilesDir(), VIEWPIC_LOGS);
+			//File file = new File(context.getFilesDir(), VIEWPIC_LOGS);
+			File file = new File(Environment.getExternalStoragePublicDirectory(VIEWPIC), VIEWPIC_LOGS);
 			output = new BufferedWriter(new FileWriter(file, true));
 			String log = type + new SimpleDateFormat(DD_MM_YYYY_HH_MM_SS).format(Calendar.getInstance().getTime()) + " " + message;
 			output.append(log);

@@ -2,7 +2,9 @@ package com.example.viewpic.activities;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -22,6 +24,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -40,16 +43,16 @@ import android.widget.AdapterView.OnItemClickListener;
 public class MainActivity extends Activity {
 
 	private static final String DD_MM_YYYY_HH_MM_SS = "dd.MM.yyyy HH:mm:ss";
+	private static final String DDMMYYYYHHMMSS = "ddMMyyyyHHmmss";
 	private static final String LOADED_FROM_STORAGE_FILE = "Loaded from storage file: ";
 	private static final String STORAGE_FILE_NOT_FOUND = "Storage file not found.";
 	private static final String ADDED_TO_STORAGE = "Added to storage: ";
 	private static final String ADDED_IMAGE = "Added image: ";
-	private static final String TEMP = "temp.jpg";
+	private static String TEMP = "temp2.jpg";
 	private static final int FOUR = 4;
 	private static final String CANCEL = "Cancel";
 	private static final String OPEN_GALLERY = "Open gallery";
 	private static final String START_CAMERA = "Start camera";
-	private static final String TEMP_JPG = TEMP;
 	private static final String IMAGE = "image/*";
 	private static final String SELECT_FILE2 = "Select File";
 	private static final String NO_DESCRIPTION = "No description";
@@ -63,8 +66,22 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		LogsUtility.log(getApplicationContext(), LogsUtility.INFO, 
-				"Start application at:" + new SimpleDateFormat(DD_MM_YYYY_HH_MM_SS).format(Calendar.getInstance().getTime()));
+		FilesUtility.createAppFolder();
+		LogsUtility.log(
+				getApplicationContext(),
+				LogsUtility.INFO,
+				"Start application at:"
+						+ new SimpleDateFormat(DD_MM_YYYY_HH_MM_SS)
+								.format(Calendar.getInstance().getTime()));
+		Toast.makeText(MainActivity.this,
+				"Storage directory: " + getApplicationContext().getFilesDir(),
+				Toast.LENGTH_LONG).show();
+		Toast.makeText(
+				MainActivity.this,
+				"Pictures directory: "
+						+ Environment
+								.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
+				Toast.LENGTH_LONG).show();
 		picturesList.clear();
 		setGridData();
 		setContentView(R.layout.activity_main);
@@ -101,7 +118,7 @@ public class MainActivity extends Activity {
 		try {
 			if (resultCode == RESULT_OK) {
 				if (requestCode == REQUEST_CAMERA) {
-					// Should add picture on sd card and show it in list
+					saveCameraResults(data);
 				} else if (requestCode == SELECT_FILE) {
 					Uri selectedImage = data.getData();
 					String[] filePathColumn = { MediaStore.Images.Media.DATA };
@@ -188,7 +205,6 @@ public class MainActivity extends Activity {
 	// start select picture dialog
 	private void selectPicture() {
 		final String[] items = { START_CAMERA, OPEN_GALLERY, CANCEL };
-
 		AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 		builder.setTitle(R.string.addPic);
 		builder.setItems(items, new DialogInterface.OnClickListener() {
@@ -196,8 +212,12 @@ public class MainActivity extends Activity {
 			public void onClick(DialogInterface dialog, int item) {
 				if (items[item].equals(items[0])) {
 					Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-					File file = new File(android.os.Environment
-							.getExternalStorageDirectory(), TEMP_JPG);
+					TEMP = new SimpleDateFormat(DDMMYYYYHHMMSS).format(Calendar
+							.getInstance().getTime()) + ".jpg";
+					File file = new File(
+							Environment
+									.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
+							TEMP);
 					intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(file));
 					startActivityForResult(intent, REQUEST_CAMERA);
 				} else if (items[item].equals(items[1])) {
@@ -228,5 +248,55 @@ public class MainActivity extends Activity {
 		btmapOptions.inScaled = false;
 		bm = BitmapFactory.decodeFile(picturePath, btmapOptions);
 		return bm;
+	}
+
+	// save camera result on sd card and push it in list
+	private void saveCameraResults(Intent data) {
+		File f = new File(
+				Environment
+						.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
+				File.separator);
+		for (File temp : f.listFiles()) {
+			if (temp.getName().equals(TEMP)) {
+				f = temp;
+				break;
+			}
+		}
+		try {
+			Bitmap bitmap;
+			BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+			bitmapOptions.inSampleSize = FOUR;
+			bitmapOptions.inPurgeable = true;
+			bitmapOptions.inScaled = false;
+			bitmap = BitmapFactory.decodeFile(f.getPath(), bitmapOptions);
+			addPicture(bitmap, TEMP, f.getPath());
+			FilesUtility.write(getApplicationContext(), f.getPath());
+			LogsUtility.log(getApplicationContext(), LogsUtility.INFO,
+					ADDED_TO_STORAGE + f.getPath());
+			Toast.makeText(MainActivity.this, ADDED_IMAGE + f.getPath(),
+					Toast.LENGTH_LONG).show();
+			update();
+			f.delete();
+			OutputStream outFile = null;
+			File file = new File(f.getPath());
+			try {
+				outFile = new FileOutputStream(file);
+				bitmap.compress(Bitmap.CompressFormat.JPEG, 85, outFile);
+				outFile.flush();
+				outFile.close();
+			} catch (FileNotFoundException e) {
+				LogsUtility.log(getApplicationContext(), LogsUtility.ERROR,
+						e.getMessage());
+			} catch (IOException e) {
+				LogsUtility.log(getApplicationContext(), LogsUtility.ERROR,
+						e.getMessage());
+			} catch (Exception e) {
+				LogsUtility.log(getApplicationContext(), LogsUtility.ERROR,
+						e.getMessage());
+			}
+		} catch (Exception e) {
+			Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG)
+					.show();
+		}
 	}
 }
