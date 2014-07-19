@@ -2,7 +2,6 @@ package com.example.viewpic.activities;
 
 import com.example.viewpic.R;
 import com.example.viewpic.beans.Picture;
-import com.example.viewpic.utility.LogsUtility;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -61,7 +60,6 @@ public class EditPictureActivity extends Activity {
 						SendEmailActivity.class);
 				i.putExtra(POSITION, number);
 				startActivity(i);
-				LogsUtility.log(getApplicationContext(), LogsUtility.INFO, "Start SendEmailActivity was successful.");
 			}
 		};
 		Button sendEmailButton = (Button) findViewById(R.id.sendBtn);
