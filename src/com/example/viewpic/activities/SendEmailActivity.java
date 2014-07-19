@@ -2,6 +2,7 @@ package com.example.viewpic.activities;
 
 import com.example.viewpic.R;
 import com.example.viewpic.beans.Picture;
+import com.example.viewpic.utility.LogsUtility;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -66,6 +67,7 @@ public class SendEmailActivity extends Activity {
 								R.string.Send_mail+""));
 						finish();
 					} catch (Exception e) {
+						LogsUtility.log(getApplicationContext(), LogsUtility.ERROR, e.getMessage());
 						Toast.makeText(SendEmailActivity.this, R.string.Send_mail_problems,
 								Toast.LENGTH_SHORT).show();
 					}
