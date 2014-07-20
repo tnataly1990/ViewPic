@@ -41,29 +41,31 @@ public final class R {
         public static final int picture_grid=0x7f030003;
     }
     public static final class string {
-        public static final int Email_is_not_valid=0x7f05000d;
-        public static final int Image_was_saved_in_the_gallery=0x7f050011;
-        public static final int Not_enough_memory=0x7f050012;
-        public static final int Ops_person_has_not_email=0x7f05000b;
-        public static final int Picture_was_not_selected=0x7f050010;
-        public static final int Please_enter_email=0x7f05000c;
-        public static final int Send_mail=0x7f05000e;
-        public static final int Send_mail_problems=0x7f05000f;
+        public static final int Email_is_not_valid=0x7f05000f;
+        public static final int Image_was_saved_in_the_gallery=0x7f050013;
+        public static final int Not_enough_memory=0x7f050014;
+        public static final int Ops_person_has_not_email=0x7f05000d;
+        public static final int Picture_was_not_selected=0x7f050012;
+        public static final int Please_enter_email=0x7f05000e;
+        public static final int Send_mail=0x7f050010;
+        public static final int Send_mail_problems=0x7f050011;
         /**  MESSAGES 
          */
-        public static final int Set_first_email_by_default=0x7f05000a;
+        public static final int Set_first_email_by_default=0x7f05000c;
         public static final int addBtn=0x7f050001;
-        public static final int addPic=0x7f050009;
+        public static final int addPic=0x7f05000b;
         /**  LABELS 
          */
         public static final int appName=0x7f050000;
-        public static final int editDesc=0x7f050004;
-        public static final int editName=0x7f050003;
-        public static final int saveBtn=0x7f050005;
-        public static final int sendBtn=0x7f050002;
-        public static final int sendEmailBtn=0x7f050008;
-        public static final int subjectEmailText=0x7f050007;
-        public static final int toEmailText=0x7f050006;
+        public static final int editDesc=0x7f050006;
+        public static final int editName=0x7f050005;
+        public static final int saveBtn=0x7f050007;
+        public static final int sendBtn=0x7f050004;
+        public static final int sendEmailBtn=0x7f05000a;
+        public static final int subjectEmailText=0x7f050009;
+        public static final int switchStorageLocalBtn=0x7f050003;
+        public static final int switchStoragePubBtn=0x7f050002;
+        public static final int toEmailText=0x7f050008;
     }
     public static final class style {
         /** 

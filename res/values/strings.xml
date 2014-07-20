@@ -4,6 +4,8 @@
     <!-- LABELS -->
     <string name="appName">ViewPic</string>
     <string name="addBtn">Add</string>
+    <string name="switchStoragePubBtn">To pub</string>
+    <string name="switchStorageLocalBtn">To local</string>
     <string name="sendBtn">Send via Email</string>
     <string name="editName">Title</string>
     <string name="editDesc">Description</string>

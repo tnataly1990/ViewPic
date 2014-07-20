@@ -42,6 +42,7 @@ import android.widget.AdapterView.OnItemClickListener;
  */
 public class MainActivity extends Activity {
 
+	private static final String START_APPLICATION_AT = "Start application at:";
 	private static final String DD_MM_YYYY_HH_MM_SS = "dd.MM.yyyy HH:mm:ss";
 	private static final String DDMMYYYYHHMMSS = "ddMMyyyyHHmmss";
 	private static final String LOADED_FROM_STORAGE_FILE = "Loaded from storage file: ";
@@ -66,22 +67,13 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		FilesUtility.createAppFolder();
+		LogsUtility.createAppFolder();
 		LogsUtility.log(
 				getApplicationContext(),
 				LogsUtility.INFO,
-				"Start application at:"
+				START_APPLICATION_AT
 						+ new SimpleDateFormat(DD_MM_YYYY_HH_MM_SS)
 								.format(Calendar.getInstance().getTime()));
-		Toast.makeText(MainActivity.this,
-				"Storage directory: " + getApplicationContext().getFilesDir(),
-				Toast.LENGTH_LONG).show();
-		Toast.makeText(
-				MainActivity.this,
-				"Pictures directory: "
-						+ Environment
-								.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
-				Toast.LENGTH_LONG).show();
 		picturesList.clear();
 		setGridData();
 		setContentView(R.layout.activity_main);
@@ -110,6 +102,7 @@ public class MainActivity extends Activity {
 		};
 		Button addButton = (Button) findViewById(R.id.addBtn);
 		addButton.setOnClickListener(searchPicturesListener);
+
 	}
 
 	@Override
@@ -178,7 +171,9 @@ public class MainActivity extends Activity {
 
 	// add new picture
 	private void addPicture(Bitmap image, String name, String path) {
-		picturesList.add(new Picture(image, name, NO_DESCRIPTION));
+		if (image != null) {
+			picturesList.add(new Picture(image, name, NO_DESCRIPTION));
+		}
 	}
 
 	// init start data for pictures view
@@ -241,13 +236,19 @@ public class MainActivity extends Activity {
 
 	// read picture and decoding
 	private Bitmap readPicture(String picturePath) {
-		Bitmap bm;
-		BitmapFactory.Options btmapOptions = new BitmapFactory.Options();
-		btmapOptions.inSampleSize = FOUR;
-		btmapOptions.inPurgeable = true;
-		btmapOptions.inScaled = false;
-		bm = BitmapFactory.decodeFile(picturePath, btmapOptions);
+		Bitmap bm = null;
+		try {
+			BitmapFactory.Options btmapOptions = new BitmapFactory.Options();
+			btmapOptions.inSampleSize = FOUR;
+			btmapOptions.inPurgeable = true;
+			btmapOptions.inScaled = false;
+			bm = BitmapFactory.decodeFile(picturePath, btmapOptions);
+		} catch (OutOfMemoryError e) {
+			LogsUtility.log(getApplicationContext(), LogsUtility.ERROR,
+					e.getMessage());
+		}
 		return bm;
+
 	}
 
 	// save camera result on sd card and push it in list
